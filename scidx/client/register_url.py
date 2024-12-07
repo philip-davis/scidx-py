@@ -100,7 +100,8 @@ class NetCDFProcessing:
 
 def register_url(self, resource_name: str, resource_title: str, owner_org: str,
                  resource_url: str, file_type: str, processing: Optional[Union[StreamProcessing, CSVProcessing, TXTProcessing, JSONProcessing, NetCDFProcessing]] = None,
-                 notes: str = "", extras: dict = None, mapping: Optional[dict] = None, timestamp: Optional[datetime] = None) -> dict:
+                 notes: str = "", extras: dict = None, mapping: Optional[dict] = None, timestamp: Optional[datetime] = None, start_time: Optional[datetime] = None,
+                 end_time: Optional[datetime] = None) -> dict:
     """
     Create a new URL resource in the sciDX system.
 
@@ -121,6 +122,11 @@ def register_url(self, resource_name: str, resource_title: str, owner_org: str,
     notes : str, optional
         Additional notes about the resource.
     timestamp : datetime
+        A timestamp to associate with the resource
+    start_time : datetime
+        A timestamp associated with the start of the resource
+    end_time : datetime
+        A timestamp associated with the end of the resource
     extras : dict, optional
         Additional metadata to be added to the resource.
     mapping : dict, optional
@@ -134,10 +140,18 @@ def register_url(self, resource_name: str, resource_title: str, owner_org: str,
     url = f"{self.api_url}/url"
     headers = self._get_headers()
 
-    if timestamp:
+    if timestamp or start_time or end_time:
         if not extras:
             extras = {}
-        extras["timestamp"] = timestamp.strftime('%Y-%m-%dT%H:%M:%S')
+        if timestamp:
+            if start_time or end_time:
+                raise ValueError("a resource can time a start/end time or a timestamp, but not both.")
+            extras["timestamp"] = timestamp.strftime('%Y-%m-%dT%H:%M:%S')
+        else:
+            if not (start_time and end_time):
+                raise ValueError("a resource must have both a start time and end time, or neither.")
+            extras["start_time"] = start_time.strftime('%Y-%m-%dT%H:%M:%S')
+            extras["end_time"] = end_time.strftime('%Y-%m-%dT%H:%M:%S')
 
     # Build the payload
     payload = {
@@ -154,7 +168,6 @@ def register_url(self, resource_name: str, resource_title: str, owner_org: str,
         payload["file_type"] = file_type
     if processing:
         payload["processing"] = processing.to_dict()
-
     response = requests.post(url, json=payload, headers=headers)
     if response.status_code == 201:
         return response.json()
