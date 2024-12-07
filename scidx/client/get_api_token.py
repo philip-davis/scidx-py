@@ -22,7 +22,7 @@ def get_api_token(self, username: str, password: str) -> str:
     HTTPError
         If the API request fails with detailed error information.
     """
-    auth_url = f"{self.api_url}/token/"
+    auth_url = f"{self.api_url}/token"
     payload = {
         'username': username,
         'password': password
