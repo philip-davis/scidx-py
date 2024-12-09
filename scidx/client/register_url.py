@@ -150,6 +150,7 @@ def register_url(self, resource_name: str, resource_title: str, owner_org: str,
         else:
             if not (start_time and end_time):
                 raise ValueError("a resource must have both a start time and end time, or neither.")
+            extras["timestamp"] = start_time.strftime('%Y-%m-%dT%H:%M:%S')
             extras["start_time"] = start_time.strftime('%Y-%m-%dT%H:%M:%S')
             extras["end_time"] = end_time.strftime('%Y-%m-%dT%H:%M:%S')
 
