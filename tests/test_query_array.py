@@ -5,6 +5,7 @@ import os
 import pytest
 import random
 import string
+import time
 from . import conftest
 
 SCIDX_ORG=os.environ["SCIDX_ORG"]
@@ -35,13 +36,15 @@ def test_query_array(client):
     resource_id = response.get("id")
     assert resource_id
 
+    time.sleep(1)
+
     result = client.query_array(
         source = source, 
         var_name = "example", 
         lb = (3, 4), 
         ub = (5,6), 
         timestamp=datetime.today())
-    
+
     assert len(result) == 0
 
     timestamp = datetime.today().strftime('%Y%m%dT%H%M%S')
@@ -62,5 +65,3 @@ def test_query_array(client):
     
     delete_response = client.delete_resource(resource_name=resource_name)
     assert delete_response.get("message") == f"{resource_name} deleted successfully"
-
-    
